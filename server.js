@@ -20,9 +20,12 @@ app.post("/speech-to-text", upload.single("audio"), (req, res) => {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
-  const outputTxt = path.join(outputDir, `${req.file.filename}.txt`);
+  const outputFileBase = path.join(outputDir, req.file.filename);
 
-  const cmd = `cd ~/whisper.cpp && ./build/bin/whisper-cli -m models/ggml-base.en.bin "${wavPath}" -otxt -of "${outputTxt}"`;
+  const cmd = `cd ~/whisper.cpp &&
+  ./build/bin/whisper-cli -m models/ggml-base.en.bin "${wavPath}" -otxt -of "${outputFileBase}"`;
+
+  const outputTxt = `${outputFileBase}.txt`;
 
   exec(cmd, (error, stdout, stderr) => {
     if (error) {
