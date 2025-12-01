@@ -21,8 +21,8 @@ app.post("/speech-to-text", upload.single("audio"), (req, res) => {
   const outputTxt = `output/${outputName}.txt`;
 
   const cmd = `
-    cd ~/whisper.cpp &&
-    ./build/bin/whisper-cli -m models/ggml-base.en.bin ../${wavPath} -otxt -of ../output/${outputName}
+  cd ~/whisper.cpp &&
+  ./build/bin/whisper-cli -m models/ggml-base.en.bin "${wavPath}" -otxt -of "${outputTxt}"
   `;
 
   exec(cmd, (error) => {
