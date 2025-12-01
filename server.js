@@ -16,7 +16,10 @@ app.post("/speech-to-text", upload.single("audio"), (req, res) => {
   const outputDir = path.resolve("output");
   if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
-  const outputFileBase = path.join(outputDir, `${req.file.filename}-${uniqueId}`);
+  const outputFileBase = path.join(
+    outputDir,
+    `${req.file.filename}-${uniqueId}`
+  );
 
   const cmd = `cd ~/whisper.cpp &&
     ./build/bin/whisper-cli -m models/ggml-base.en.bin "${wavPath}" -otxt -of "${outputFileBase}"`;
@@ -32,8 +35,8 @@ app.post("/speech-to-text", upload.single("audio"), (req, res) => {
     }
 
     fs.readFile(outputTxt, "utf8", (err, text) => {
-      fs.unlinkSync(wavPath);
-      fs.unlinkSync(outputTxt);
+      fs.unlink(wavPath, () => {});
+      fs.unlink(outputTxt, () => {});
 
       if (err) return res.status(500).json({ message: "Cannot read text" });
 
