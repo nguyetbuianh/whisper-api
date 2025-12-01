@@ -1,29 +1,25 @@
 import express from "express";
 import multer from "multer";
-import cors from "cors";
-import fs from "fs";
 import path from "path";
+import fs from "fs";
 import { exec } from "child_process";
+import { v4 as uuidv4 } from "uuid";
 
 const app = express();
-app.use(cors());
-app.use(express.json());
-
-const upload = multer({ dest: "temp/" });
+const upload = multer({ dest: "uploads/" });
 
 app.post("/speech-to-text", upload.single("audio"), (req, res) => {
   if (!req.file) return res.status(400).json({ message: "No file uploaded" });
 
+  const uniqueId = uuidv4();
   const wavPath = path.resolve(req.file.path);
   const outputDir = path.resolve("output");
-  if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir, { recursive: true });
-  }
+  if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
-  const outputFileBase = path.join(outputDir, req.file.filename);
+  const outputFileBase = path.join(outputDir, `${req.file.filename}-${uniqueId}`);
 
   const cmd = `cd ~/whisper.cpp &&
-  ./build/bin/whisper-cli -m models/ggml-base.en.bin "${wavPath}" -otxt -of "${outputFileBase}"`;
+    ./build/bin/whisper-cli -m models/ggml-base.en.bin "${wavPath}" -otxt -of "${outputFileBase}"`;
 
   const outputTxt = `${outputFileBase}.txt`;
 
@@ -31,20 +27,19 @@ app.post("/speech-to-text", upload.single("audio"), (req, res) => {
     if (error) {
       console.error("Whisper exec error:", error);
       console.error("stderr:", stderr);
-      return res.status(500).json({ message: "Whisper failed" });
+      fs.unlinkSync(wavPath);
+      return res.status(500).json({ message: "Whisper failed", error: stderr });
     }
 
     fs.readFile(outputTxt, "utf8", (err, text) => {
+      fs.unlinkSync(wavPath);
+      fs.unlinkSync(outputTxt);
+
       if (err) return res.status(500).json({ message: "Cannot read text" });
 
       res.json({ text });
-
-      fs.unlinkSync(wavPath);
-      fs.unlinkSync(outputTxt);
     });
   });
 });
 
-app.listen(3000, "0.0.0.0", () =>
-  console.log("Whisper API running on port 3000")
-);
+app.listen(3000, () => console.log("Server running on port 3000"));
