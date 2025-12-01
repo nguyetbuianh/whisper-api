@@ -1,23 +1,22 @@
-import express from 'express';
-import multer from 'multer';
-import cors from 'cors';
-import fs from 'fs';
-import path from 'path';
-import { exec } from 'child_process';
+import express from "express";
+import multer from "multer";
+import cors from "cors";
+import fs from "fs";
+import path from "path";
+import { exec } from "child_process";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 const upload = multer({
-  dest: "temp/"
+  dest: "temp/",
 });
 
 app.post("/speech-to-text", upload.single("audio"), (req, res) => {
-  if (!req.file)
-    return res.status(400).json({ message: "No file uploaded" });
+  if (!req.file) return res.status(400).json({ message: "No file uploaded" });
 
-  const wavPath = req.file.path; 
+  const wavPath = req.file.path;
   const outputName = req.file.filename;
   const outputTxt = `output/${outputName}.txt`;
 
@@ -43,4 +42,6 @@ app.post("/speech-to-text", upload.single("audio"), (req, res) => {
   });
 });
 
-app.listen(3000, () => console.log("Whisper API running on port 3000"));
+app.listen(3000, "0.0.0.0", () =>
+  console.log("Whisper API running on port 3000")
+);
