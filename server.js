@@ -23,7 +23,7 @@ app.post("/speech-to-text", upload.single("audio"), (req, res) => {
 
   const cmd = `
     cd ~/whisper.cpp &&
-    ./main -m models/ggml-base.bin -f ../${wavPath} -otxt -of ../output/${outputName}
+    ./build/bin/whisper-cli -m models/ggml-base.en.bin ../${wavPath} -otxt -of ../output/${outputName}
   `;
 
   exec(cmd, (error) => {
