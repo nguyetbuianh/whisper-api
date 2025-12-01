@@ -1,0 +1,22 @@
+# Node modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temp / output folder
+temp/
+output/
+
+# Environment files
+.env
+
+# System / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Swap / editor temp
+*.swp
+*.swo
