@@ -14,8 +14,13 @@ const upload = multer({ dest: "temp/" });
 app.post("/speech-to-text", upload.single("audio"), (req, res) => {
   if (!req.file) return res.status(400).json({ message: "No file uploaded" });
 
-  const wavPath = path.resolve(req.file.path); 
-  const outputTxt = path.resolve(`output/${req.file.filename}.txt`);
+  const wavPath = path.resolve(req.file.path);
+  const outputDir = path.resolve("output");
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
+  }
+
+  const outputTxt = path.join(outputDir, `${req.file.filename}.txt`);
 
   const cmd = `cd ~/whisper.cpp && ./build/bin/whisper-cli -m models/ggml-base.en.bin "${wavPath}" -otxt -of "${outputTxt}"`;
 
