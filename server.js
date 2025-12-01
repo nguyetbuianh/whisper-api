@@ -9,25 +9,20 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const upload = multer({
-  dest: "temp/",
-});
+const upload = multer({ dest: "temp/" });
 
 app.post("/speech-to-text", upload.single("audio"), (req, res) => {
   if (!req.file) return res.status(400).json({ message: "No file uploaded" });
 
-  const wavPath = req.file.path;
-  const outputName = req.file.filename;
-  const outputTxt = `output/${outputName}.txt`;
+  const wavPath = path.resolve(req.file.path); 
+  const outputTxt = path.resolve(`output/${req.file.filename}.txt`);
 
-  const cmd = `
-  cd ~/whisper.cpp &&
-  ./build/bin/whisper-cli -m models/ggml-base.en.bin "${wavPath}" -otxt -of "${outputTxt}"
-  `;
+  const cmd = `cd ~/whisper.cpp && ./build/bin/whisper-cli -m models/ggml-base.en.bin "${wavPath}" -otxt -of "${outputTxt}"`;
 
-  exec(cmd, (error) => {
+  exec(cmd, (error, stdout, stderr) => {
     if (error) {
-      console.error(error);
+      console.error("Whisper exec error:", error);
+      console.error("stderr:", stderr);
       return res.status(500).json({ message: "Whisper failed" });
     }
 
